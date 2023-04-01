@@ -21,11 +21,16 @@ def main():
         cant_lineas = len(lineas)
 
         long = 0
-        for palabra in palabras:
-            longitud = len(palabra.strip())
-            long += longitud   
 
-        promedio = long/len(palabras)
+        contador = 0
+        for palabra in palabras:
+            palabras[contador].replace("\n", "")
+            longitud = len(palabra.strip())
+            long += longitud
+            contador += 1
+
+        promedio = round(long)/len(palabras)
+        print(palabras)
 
     print(f'Cantidad de líneas: {cant_lineas}')
     print(f'Cantidad de palabras del archivo: {len(palabras)}')
