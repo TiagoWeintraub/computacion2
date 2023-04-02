@@ -1,6 +1,5 @@
 # Escribir un programa en Python que acepte un número de argumento entero positivo n y genere una lista de los n primeros números impares. El programa debe imprimir la lista resultante en la salida estandar.
 
-
 import argparse    
 import sys
 
@@ -13,7 +12,7 @@ def main():
 
     if args.n <= 0:
         print("El número de elementos debe ser un entero positivo.")
-        sys.exit(1)
+        sys.exit(1) # para indicar que ha habido un error
 
     impares = []
     n_impares = 0

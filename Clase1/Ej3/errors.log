@@ -1,0 +1,4 @@
+Se produjo un error de tipo FileNotFoundError: [Errno 2] No such file or directory: 'ej32.txt'
+Se produjo un error de tipo FileNotFoundError: [Errno 2] No such file or directory: 'Nombremal.txt'
+Se produjo un error de tipo FileNotFoundError: [Errno 2] No such file or directory: 'ejerciicio3.txt'
+Se produjo un error de tipo ZeroDivisionError: division by zero
