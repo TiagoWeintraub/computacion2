@@ -4,35 +4,36 @@ import os
 import argparse
 import math
 
-def fork():
-    
-    parser = argparse.ArgumentParser(description='Creamos el objeto')
+class Fork():
+    def fork():
 
-    # Argumentos     # -n es para consola y --numero para código: ej python3 tp2.py -n 16 -f
-    parser.add_argument('-n', '--numero',type=float, help='Número a sacar la raíz')
-    parser.add_argument('-f', '--fork', action='store_true', help='Hace el fork') #El valor del fork es true
+        parser = argparse.ArgumentParser(description='Creamos el objeto')
 
-    args = parser.parse_args()
-    
-    if args.fork: #Se cumple porque el action = true 
-        pid = os.fork()
+        # Argumentos     # -n es para consola y --numero para código: ej python3 tp2.py -n 16 -f
+        parser.add_argument('-n', '--numero',type=float, help='Número a sacar la raíz')
+        parser.add_argument('-f', '--fork', action='store_true', help='Hace el fork') #El valor del fork es true
 
-        if args.numero == 0:
-            return 0
+        args = parser.parse_args()
 
-        elif pid == 0:
-            if args.numero < 0:
-                resultado = str(round(-math.sqrt(-1*args.numero),2)) + 'i'
-            else: 
-                resultado = round(-math.sqrt(args.numero),2)
-            return resultado
+        if args.fork: #Se cumple porque el action = true 
+            pid = os.fork()
 
-        else:
-            if args.numero < 0:
-                resultado = str(round(math.sqrt(-1*args.numero),2)) + 'i'
-            else: 
-                resultado = round(math.sqrt(args.numero),2)
-            return resultado
+            if args.numero == 0:
+                return 0
+
+            elif pid == 0:
+                if args.numero < 0:
+                    resultado = str(round(-math.sqrt(-1*args.numero),2)) + 'i'
+                else: 
+                    resultado = round(-math.sqrt(args.numero),2)
+                return resultado
+
+            else:
+                if args.numero < 0:
+                    resultado = str(round(math.sqrt(-1*args.numero),2)) + 'i'
+                else: 
+                    resultado = round(math.sqrt(args.numero),2)
+                return resultado
 
 if __name__ == '__main__':
-    print(fork())
+    print(Fork.fork())
