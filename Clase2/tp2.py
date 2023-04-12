@@ -5,7 +5,7 @@ import argparse
 import math
 
 class Fork():
-    def fork():
+    def fork(self):
 
         parser = argparse.ArgumentParser(description='Creamos el objeto')
 
