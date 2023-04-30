@@ -30,7 +30,7 @@ class Programa():
         with open(self.args.archivo, 'r') as f:
             for linea in f:
                 conn.send(linea)
-            print(os.getpid())
+            # print(os.getpid())
             conn.send('Terminar')
 
     def contar_palabras(self, conn):
