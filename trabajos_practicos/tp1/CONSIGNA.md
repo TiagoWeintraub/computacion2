@@ -1,7 +1,6 @@
 COMPUTACION II
 ​
-​
-## TP1
+# TP1
 ​
 Fecha de entrega: 02/05/2023
 ​
