@@ -3,9 +3,6 @@
 
 import os
 import multiprocessing
-import sys
-import time
-import argparse
 
 # Calcular el producto de matrices 2x2
 
