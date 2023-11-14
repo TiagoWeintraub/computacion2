@@ -60,4 +60,3 @@ https://www.rfc-editor.org/rfc/rfc1867
 
 ### Bonus Track
 El servidor debe poder atender requerimientos HTTPS
-

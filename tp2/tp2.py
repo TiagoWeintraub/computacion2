@@ -1,19 +1,23 @@
 import http.server
 import socketserver
-import socket
 import threading
 import multiprocessing
 import os
 import argparse
 from PIL import Image
 
-# Modo de uso:
-# python3 tp2.py -i 127.0.0.1 -p 8080 -e 0.5 --> Si no se coloca el factor de escalado -e la imagen es en escala de grises
-# curl -X GET "http://127.0.0.1:8080/imagen.jpeg" --output imagen_procesada.jpeg
-# Otra opción es acceder a http://localhost:8080/imagen.jpeg
+# MODO DE USO:
+# 1) INICIAR SERVIDOR HTTP:
+#           python3 tp2.py -i 127.0.0.1 -p 8080 -e 0.5 --> Si no se coloca el factor de escalado -e la imagen es en escala de grises
+# 2) INICIAR CLIENTE:
+#           curl -X GET "http://127.0.0.1:8080/imagen.jpeg" --output imagen_procesada.jpeg
+#           Otra opción es acceder a http://localhost:8080/imagen.jpeg
 
 class ProcesadorDeImagenes(http.server.SimpleHTTPRequestHandler):
     factor_escala = 1.0
+    imagen_procesada = None
+    lock = threading.Lock()
+    event = threading.Event()
 
     def do_GET(self):
         try:
@@ -70,33 +74,51 @@ class ProcesadorDeImagenes(http.server.SimpleHTTPRequestHandler):
             print(f"Error en el escalado de la imagen: {e}")
             return None
 
-def iniciar_servidor_http(ip, puerto, manejador):
+def iniciar_servidor_http(ip, puerto, manejador, queue):
     with socketserver.ThreadingTCPServer((ip, puerto), manejador) as servidor_http:
         print(f"Servidor HTTP en {ip}:{puerto}")
-        servidor_http.serve_forever()
 
-def iniciar_servidor_procesamiento_imagenes(manejador):
-    socket_comunicacion = None
-
-    try:
-        socket_comunicacion = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        socket_comunicacion.bind(('localhost', 9999))
-        socket_comunicacion.listen(1)
+        hilo_procesar_imagen = threading.Thread(target=procesar_imagen, args=(manejador,))
+        hilo_procesar_imagen.start()
 
         while True:
-            conexion, direccion = socket_comunicacion.accept()
-            factor_escala = float(conexion.recv(1024).decode('utf-8'))
-            conexion.close()
+            servidor_http.handle_request()
+
+def procesar_imagen(manejador):
+    try:
+        while True:
+            with manejador.lock:
+                manejador.event.clear()
+                while manejador.imagen_procesada is None:
+                    manejador.lock.release()
+                    manejador.event.wait()
+                    manejador.lock.acquire()
+
+                ruta_imagen_procesada = manejador.imagen_procesada
+                manejador.imagen_procesada = None
+
+            with open(ruta_imagen_procesada, 'rb') as f:
+                manejador.request.sendall(f.read())
+    except Exception as e:
+        print(f"Error en el hilo de procesamiento de imágenes: {e}")
+
+def iniciar_servidor_procesamiento_imagenes(queue):
+    try:
+        while True:
+            factor_escala = queue.get()
             ProcesadorDeImagenes.factor_escala = factor_escala
+
+            # Simula el procesamiento de la imagen
+            ruta_imagen_procesada = ProcesadorDeImagenes.convertir_a_escala_de_grises("imagen.jpg")
+
+            with ProcesadorDeImagenes.lock:
+                ProcesadorDeImagenes.imagen_procesada = ruta_imagen_procesada
+                ProcesadorDeImagenes.event.set()
 
     except KeyboardInterrupt:
         print("\nDeteniendo servidor de procesamiento de imágenes...")
     except Exception as e:
         print(f"Error en el servidor de procesamiento de imágenes: {e}")
-    finally:
-        if socket_comunicacion:
-            socket_comunicacion.close()
-            print("Servidor de procesamiento de imágenes detenido.")
 
 def main():
     parser = argparse.ArgumentParser(description='Tp2 - procesa imágenes')
@@ -106,11 +128,14 @@ def main():
     args = parser.parse_args()
 
     manejador = ProcesadorDeImagenes
-    manejador.factor_escala = args.escala  
-    hilo_servidor_http = threading.Thread(target=iniciar_servidor_http, args=(args.ip, args.puerto, manejador), daemon=True)
+    manejador.factor_escala = args.escala
+
+    queue = multiprocessing.Queue()
+
+    hilo_servidor_http = threading.Thread(target=iniciar_servidor_http, args=(args.ip, args.puerto, manejador, queue), daemon=True)
     hilo_servidor_http.start()
 
-    proceso_procesamiento_imagenes = multiprocessing.Process(target=iniciar_servidor_procesamiento_imagenes, args=(manejador,))
+    proceso_procesamiento_imagenes = multiprocessing.Process(target=iniciar_servidor_procesamiento_imagenes, args=(queue,))
     proceso_procesamiento_imagenes.start()
 
     try:
