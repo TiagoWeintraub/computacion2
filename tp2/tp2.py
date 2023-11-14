@@ -107,8 +107,6 @@ def iniciar_servidor_procesamiento_imagenes(queue):
         while True:
             factor_escala = queue.get()
             ProcesadorDeImagenes.factor_escala = factor_escala
-
-            # Simula el procesamiento de la imagen
             ruta_imagen_procesada = ProcesadorDeImagenes.convertir_a_escala_de_grises("imagen.jpg")
 
             with ProcesadorDeImagenes.lock:
